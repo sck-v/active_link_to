@@ -127,13 +127,25 @@ class ActiveLinkToTest < Test::Unit::TestCase
   def test_active_link_to_with_wrap_tag
     request.fullpath = '/root'
     link = active_link_to('label', '/root', :wrap_tag => :li)
-    assert_equal '<li class="active"><a class="active" href="/root">label</a></li>', link
+    assert_equal '<li class="active"><a href="/root">label</a></li>', link
 
     link = active_link_to('label', '/root', :wrap_tag => :li, :active_disable => true)
-    assert_equal '<li class="active"><span class="active">label</span></li>', link
+    assert_equal '<li class="active"><span>label</span></li>', link
 
     link = active_link_to('label', '/root', :wrap_tag => :li, :class => 'testing')
-    assert_equal '<li class="testing active"><a class="testing active" href="/root">label</a></li>', link
+    assert_equal '<li class="active"><a class="testing" href="/root">label</a></li>', link
+  end
+  
+  def text_active_link_to_with_wrap_tag_and_wrap_class
+    request.fullpath = '/root' 
+    link = active_link_to('label', '/root', :wrap_tag => [:li, class: 'tab'])
+    assert_equal '<li class="active tab"><a href="/root">label</a></li>', link
+    
+    link = active_link_to('label', '/root', :wrap_tag => [:li, class: 'tab'], class: 'link')
+    assert_equal '<li class="active tab"><a class="link" href="/root">label</a></li>', link
+    
+    link = active_link_to('label', '/root', :wrap_tag => [:li, class: 'tab'], :active_disable => true)
+    assert_equal '<li class="active tab"><span class="active">label</span></li>', link
   end
 
   def test_active_link_to_with_active_disable

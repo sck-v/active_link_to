@@ -5,10 +5,11 @@ module ActiveLinkTo
   #   :class_active   => String
   #   :class_inactive => String
   #   :disable_active => Boolean
-  #   :wrap_tag       => Symbol
+  #   :wrap_tag       => Symbol or Array
   # Example usage:
   #   active_link_to('/users', :class_active => 'enabled')
   #   active_link_to(users_path, :active => :exclusive, :wrap_tag => :li)
+  #   active_link_to(users_path, :active => :exclusive, :wrap_tag => [:li, class: 'tab'])
   def active_link_to(*args, &block)
     if block_given?
       name          = capture(&block)
@@ -31,11 +32,25 @@ module ActiveLinkTo
       end
     end
 
-    css_class = link_options.delete(:class).to_s + ' '
-    css_class << active_link_to_class(url, active_options)
-    css_class.strip!
+    css_class = link_options.delete(:class).to_s.dup
+    wrap_class = ''
 
     wrap_tag = active_options[:wrap_tag].present? ? active_options[:wrap_tag] : nil
+    if wrap_tag.is_a? Array
+      wrap_options = wrap_tag.extract_options!
+      wrap_tag = wrap_tag.first
+      wrap_class = wrap_options.delete(:class)
+    end
+    
+    active_class = active_link_to_class(url, active_options)
+    
+    if wrap_tag
+      wrap_class << ' ' + active_class    
+    else
+      css_class << ' ' + active_class
+      css_class.strip!
+    end
+    
     link_options[:class] = css_class if css_class.present?
 
     link = if active_options[:active_disable] === true && is_active_link?(url, active_options[:active])
@@ -44,7 +59,7 @@ module ActiveLinkTo
       link_to(name, url, link_options)
     end
 
-    wrap_tag ? content_tag(wrap_tag, link, :class => css_class) : link
+    wrap_tag ? content_tag(wrap_tag, link, :class => wrap_class.strip) : link
   end
 
   # Returns css class name. Takes the link's URL and its params
